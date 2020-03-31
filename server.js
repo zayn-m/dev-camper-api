@@ -5,6 +5,9 @@ const morgan = require("morgan");
 const expressMongoSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
 const xssClean = require("xss-clean");
+const expressRateLimit = require("express-rate-limit");
+const hpp = require("hpp");
+const cors = require("cors");
 const fileupload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 require("colors");
@@ -42,6 +45,19 @@ app.use(helmet());
 
 // Prevent XSS attacks
 app.use(xssClean());
+
+// Rate limiting of 100 requests of each IP per 10 mins
+const limiter = expressRateLimit({
+    windowMs: 10 * 60 * 1000, // 10 mins
+    max: 100,
+});
+app.use(limiter);
+
+// Prevent http param pollution
+app.use(hpp());
+
+// Enable CORS
+app.use(cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
